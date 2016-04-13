@@ -1,3 +1,5 @@
+from sys import argv
+
 from random import choice
 
 
@@ -16,7 +18,7 @@ def open_and_read_file(file_path):
     return poem
 
 
-def make_chains(text_string):
+def make_chains(text_string, n=2):
     """Takes input text as string; returns _dictionary_ of markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -33,13 +35,16 @@ def make_chains(text_string):
 
     words = text_string.split()
 
-    # len(words) -2 so we avoid indexerror by trying to append out of avail index 
-    for i in range(len(words) - 2):
-        bigram = (words[i], words[i + 1])
-        if bigram in chains:
-            chains[bigram].append(words[i + 2])
+    # len(words) -n so we avoid indexerror by trying to append out of avail index 
+    for i in range(len(words) - n):
+        # slicing words list with i up to i+n, converting to tuple 
+        ngram = tuple(words[i:i+n])
+        if ngram in chains:
+            # if ngram already in dict, then append the next value at ngramth key
+            chains[ngram].append(words[i+n])
         else:
-            chains[bigram] = [words[i + 2]]
+            # if not in dict, then assigning a list with value to dict at ngramth key 
+            chains[ngram] = [words[i+n]]
 
     return chains
 
@@ -47,29 +52,29 @@ def make_chains(text_string):
 def make_text(chains):
     """Takes dictionary of markov chains; returns random text."""
 
-    # initialize key bigram by selecting a random choice of chain key
-    key_bigram = choice(chains.keys()) 
-    # initalize text by joining strings in key bigram to make first string
-    text = " ".join(key_bigram)
+    # initialize key ngram by selecting a random choice of chain key
+    key_ngram = choice(chains.keys()) 
+    # initalize text by joining strings in key ngram to make first string
+    text = " ".join(key_ngram)
 
-    while key_bigram in chains:
-        # get a random choice value from chains at the key_bigramth element
-        random_value = choice(chains[key_bigram])
+    while key_ngram in chains:
+        # get a random choice value from chains at the key_ngramth element
+        random_value = choice(chains[key_ngram])
         # now text is equal to old text but new random value
         text = text + " " + random_value
-        # generate new key bigram from last two words of previous text
-        key_bigram = (key_bigram[1], random_value)
+        # slicing a tuple from index 1 to the end and then adding rand.value to end
+        key_ngram = key_ngram[1:] + (random_value,)
 
     return text
 
 
-# input_path = "green-eggs.txt"
-input_path = "gettysburg.txt"
+input_path = "shel_givingtree.txt"
+# input_path = argv[1]
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text)
+chains = make_chains(input_text, 3)
 
 # Produce random text
 random_text = make_text(chains)
