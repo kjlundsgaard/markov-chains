@@ -2,6 +2,8 @@ from sys import argv
 
 from random import choice
 
+from random import sample
+
 
 def open_and_read_file(file_path):
     """Takes file path as string; returns text as string.
@@ -51,13 +53,25 @@ def make_chains(text_string, n=2):
 
 def make_text(chains):
     """Takes dictionary of markov chains; returns random text."""
+    uppercase_letters = set()
+    ending_punctuation = set()
+    # use isupper() to check str index 0 of the first element in tuple
+    # use isalpha() to check str index -1 of the last element in the tuple
+    keys = chains.keys()
+    for t in keys:
+        if t[0][0].isupper():
+            uppercase_letters.add(t)
+        elif t[-1][-1].isalpha() == False:
+            ending_punctuation.add(t)
 
     # initialize key ngram by selecting a random choice of chain key
-    key_ngram = choice(chains.keys()) 
+    # sample is like choice but for sets, must give arg of how many returned
+    # indexed at zero b/c returns list and we don't want it in list form
+    key_ngram = sample(uppercase_letters, 1)[0] 
     # initalize text by joining strings in key ngram to make first string
     text = " ".join(key_ngram)
 
-    while key_ngram in chains:
+    while key_ngram in chains and key_ngram not in ending_punctuation:
         # get a random choice value from chains at the key_ngramth element
         random_value = choice(chains[key_ngram])
         # now text is equal to old text but new random value
@@ -65,16 +79,19 @@ def make_text(chains):
         # slicing a tuple from index 1 to the end and then adding rand.value to end
         key_ngram = key_ngram[1:] + (random_value,)
 
+        # think about: len text < 140 characters 
+
+
     return text
 
 
-input_path = "shel_givingtree.txt"
+input_path = "green-eggs.txt"
 # input_path = argv[1]
 # Open the file and turn it into one long string
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text, 3)
+chains = make_chains(input_text, 6)
 
 # Produce random text
 random_text = make_text(chains)
